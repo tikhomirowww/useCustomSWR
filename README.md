@@ -1,69 +1,44 @@
-# React + TypeScript + Vite
+# 🪝 `useSWRLite` — Custom React Hook for Data Caching (SWR Pattern)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A minimal React hook that mimics the behavior of `swr` using in-memory caching and the **Stale‑While‑Revalidate** pattern.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Features
 
-## Expanding the ESLint configuration
+- In-memory cache using `Map`
+- Returns cached data immediately (if available)
+- Revalidates in the background using `fetcher`
+- Optional:
+  - `revalidateOnFocus`: refresh when tab gains focus
+  - `revalidateOnReconnect`: refresh when connection is restored
+- Manual cache update via `mutate()`
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🔧 Usage
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+```tsx
+import { useSWRLite } from "./useSWRLite";
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+function App() {
+  const { data, error, isLoading, mutate } = useSWRLite(
+    "post-1",
+    () =>
+      fetch("https://jsonplaceholder.typicode.com/posts/1").then((res) =>
+        res.json()
+      ),
+    { revalidateOnFocus: true, revalidateOnReconnect: true }
+  );
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+  return (
+    <div>
+      <h1>{data.title}</h1>
+      <button onClick={mutate}>🔄 Refresh</button>
+    </div>
+  );
+}
 ```
