@@ -1,0 +1,1 @@
+export { useSWRLite } from "./useSWRLite";
